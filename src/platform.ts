@@ -55,44 +55,51 @@ export class Heatzy implements DynamicPlatformPlugin {
       });
 
       const devices = response.data.devices;
+      const fetchedDeviceIds = new Set(devices.map(device => device.did));
+
+      // Remove accessories not present in fetched devices
+      this.accessories.forEach(accessory => {
+        if (!fetchedDeviceIds.has(accessory.context.device.did)) {
+          this.log.info('Removing unused accessory:', accessory.displayName);
+          this.api.unregisterPlatformAccessories('homebridge-heatzy', 'Heatzy', [accessory]);
+        }
+      });
+
+      // Continue with existing logic
       this.log.info('Fetched devices:', devices.length);
-      devices.forEach(device => this.addAccessory(device));
+      const selectedModes = this.config.modes || []; // Get selected modes from config
+      devices.forEach(device => {
+        selectedModes.forEach(mode => {
+          this.addAccessory(device, mode); // Create accessory for each selected mode
+        });
+      });
     } catch (error) {
       this.log.error('Error fetching devices:', (error as Error).message);
     }
   }
 
-  addAccessory(device: any) {
-    // Get selected modes from config
-    const selectedModes = this.config.modes || [];
 
-    selectedModes.forEach(mode => {
-      // Skip accessory creation if the mode is not set
-      if (!mode) {
-        return;
-      }
+  addAccessory(device: any, mode: string) {
+    const uniqueId = device.did + '-' + mode; // Unique ID for each mode
+    const uuid = this.api.hap.uuid.generate(uniqueId);
+    const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
 
-      const uniqueId = device.did + '-' + mode; // Unique ID for each mode
-      const uuid = this.api.hap.uuid.generate(uniqueId);
-      const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+    if (existingAccessory) {
+      this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+      existingAccessory.context.device = device;
+      existingAccessory.context.mode = mode; // Store the mode in the context
+      new MyPlatformAccessory(this, existingAccessory, device, mode);
+    } else {
+      const displayName = `${device.dev_alias}-${mode}`;
+      this.log.info('Adding new accessory:', displayName);
 
-      if (existingAccessory) {
-        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
-        existingAccessory.context.device = device;
-        existingAccessory.context.mode = mode; // Store the mode in the context
-        new MyPlatformAccessory(this, existingAccessory, device, mode);
-      } else {
-        const displayName = `${device.dev_alias}-${mode}`;
-        this.log.info('Adding new accessory:', displayName);
-
-        const accessory = new this.api.platformAccessory(displayName, uuid);
-        accessory.context.device = device;
-        accessory.context.mode = mode; // Store the mode in the context
-        new MyPlatformAccessory(this, accessory, device, mode);
-        this.api.registerPlatformAccessories('homebridge-heatzy', 'Heatzy', [accessory]);
-        this.accessories.push(accessory);
-      }
-    });
+      const accessory = new this.api.platformAccessory(displayName, uuid);
+      accessory.context.device = device;
+      accessory.context.mode = mode; // Store the mode in the context
+      new MyPlatformAccessory(this, accessory, device, mode);
+      this.api.registerPlatformAccessories('homebridge-heatzy', 'Heatzy', [accessory]);
+      this.accessories.push(accessory);
+    }
   }
 
 

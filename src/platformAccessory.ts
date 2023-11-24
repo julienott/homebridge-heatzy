@@ -77,9 +77,6 @@ export class MyPlatformAccessory {
         },
       });
 
-      this.platform.log.debug('Response status:', response.status);
-      this.platform.log.debug('Response data:', response.data);
-
       if (response.status === 200 && response.data && response.data.attr) {
         const currentMode = response.data.attr.mode;
         const expectedModeValue = this.modeMapping[this.mode];
