@@ -2,15 +2,24 @@
   "pluginAlias": "Heatzy",
   "pluginType": "platform",
   "singular": true,
+  "headerDisplay": "Enter your credentials for the Gizwits API.",
+  "footerDisplay": "Ensure your credentials are correct to enable proper functioning of the plugin.",
   "schema": {
     "type": "object",
     "properties": {
-      "name": {
-        "title": "Name",
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "required": true
+      },
+      "password": {
+        "title": "Password",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "format": "password"
       }
     }
-  }
+  },
+  "form": null,
+  "display": null
 }
