@@ -21,11 +21,9 @@ export class MyPlatformAccessory {
   }
 
   async setDeviceState(value: boolean, callback: Function) {
-    // Check for token expiration and authenticate if needed
     if (this.platform.needsAuthentication()) {
       await this.platform.authenticate();
     }
-
     const url = `https://euapi.gizwits.com/app/control/${this.device.did}`;
     const payload = { attrs: { on: value } };
 
@@ -41,10 +39,13 @@ export class MyPlatformAccessory {
         this.platform.log.info('Device state set successfully');
         callback(null); // No error
       } else {
-        throw new Error('Non-200 response');
+        throw new Error(`Request failed with status code ${response.status}`);
       }
     } catch (error) {
       this.platform.log.error('Failed to set device state:', (error as Error).message);
+      if (axios.isAxiosError(error) && error.response) {
+        this.platform.log.error('Error response data:', error.response.data);
+      }
       callback(error); // Error
     }
   }

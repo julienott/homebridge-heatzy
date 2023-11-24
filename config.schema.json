@@ -17,6 +17,16 @@
         "type": "string",
         "required": true,
         "format": "password"
+      },
+      "modes": {
+        "title": "Spawn Each accessory for the following modes",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["Confort", "Eco", "EcoPlus", "Sleep", "Antifreeze"]
+        },
+        "uniqueItems": true,
+        "minItems": 1
       }
     }
   },
