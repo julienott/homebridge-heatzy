@@ -7,7 +7,7 @@ export class MyPlatformAccessory {
   private modeMapping = {
     'Confort': 0,
     'Eco': 4,
-    'EcoPlus': 5,
+    'Eco Plus': 5,
     'Sleep': 1,
     'Antifreeze': 2,
   };
