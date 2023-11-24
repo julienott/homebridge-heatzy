@@ -12,6 +12,15 @@ export class MyPlatformAccessory {
     'Antifreeze': 2,
   };
 
+  private reverseModeMapping = {
+    'cft': 'Confort',
+    'eco': 'Sleep',
+    'fro': 'Antifreeze',
+    'stop': 'Off',
+    'cft1': 'Eco',
+    'cft2': 'Eco Plus',
+  };
+
   private off_mode = 3;
   private mode: string; // Add mode as a class property
 
@@ -30,6 +39,26 @@ export class MyPlatformAccessory {
     this.service.getCharacteristic(this.platform.api.hap.Characteristic.On)
       .on('set', (value, callback) => this.setDeviceState(!!value, callback))
       .on('get', callback => this.getDeviceState(callback));
+    this.startPolling();
+  }
+
+  // Add a method to fetch device status periodically
+  startPolling() {
+    // Fetch the device status initially
+    this.getDeviceState((error, isOn) => {
+      if (!error) {
+        // Schedule to fetch device status every 60 seconds (60,000 milliseconds)
+        setInterval(() => {
+          this.getDeviceState((error, isOn) => {
+            if (error) {
+              this.platform.log.error('Failed to fetch device state:', error);
+            }
+          });
+        }, 60000); // 60 seconds
+      } else {
+        this.platform.log.error('Failed to fetch initial device state:', error);
+      }
+    });
   }
 
   async setDeviceState(value: boolean, callback: Function) {
@@ -80,24 +109,33 @@ export class MyPlatformAccessory {
         },
       });
 
+      // Log the status code and response data for debugging
+      // this.platform.log.debug('Response status:', response.status);
+      // this.platform.log.debug('Response data:', response.data);
+
       if (response.status === 200 && response.data && response.data.attr) {
-        const currentMode = response.data.attr.mode;
-        const expectedModeValue = this.modeMapping[this.mode];
-        const isOn = currentMode === expectedModeValue;
+        const apiMode = response.data.attr.mode;
+        const currentMode = this.reverseModeMapping[apiMode] || 'Unknown'; // Default to 'Unknown' if not found
+        const isOn = currentMode === this.mode; // Compare with human-readable mode
+
+        if (currentMode === 'Unknown') {
+          // Log the mode received from the API
+          this.platform.log.warn(`Unknown mode received from API: ${apiMode}`);
+        }
+
+        this.platform.log.info(`Fetched device state: ${this.accessory.displayName} - Mode: ${currentMode} - State: ${isOn ? 'On' : 'Off'}`);
         callback(null, isOn);
       } else {
-        this.platform.log.error('Unexpected response:', response.status, response.statusText, response.data);
         throw new Error('Non-200 response or invalid data format');
       }
     } catch (error) {
       this.platform.log.error('Failed to get device state:', (error as Error).message);
       if (axios.isAxiosError(error) && error.response) {
-        this.platform.log.error('Error response data:', error.response.data);
+        // Log the detailed response for more insight
+        // this.platform.log.error('Error response:', error.response.data);
       }
       callback(error);
     }
   }
-
-
 
 }
