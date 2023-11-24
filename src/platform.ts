@@ -63,21 +63,30 @@ export class Heatzy implements DynamicPlatformPlugin {
   }
 
   addAccessory(device: any) {
-    const uuid = this.api.hap.uuid.generate(device.did);
-    const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+    // Create an accessory for each selected mode
+    const selectedModes = this.config.modes || []; // Get selected modes from config
+    selectedModes.forEach(mode => {
+      const uniqueId = device.did + '-' + mode; // Unique ID for each mode
+      const uuid = this.api.hap.uuid.generate(uniqueId);
+      const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
 
-    if (existingAccessory) {
-      this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
-      existingAccessory.context.device = device;
-      new MyPlatformAccessory(this, existingAccessory, device);
-    } else {
-      this.log.info('Adding new accessory:', device.dev_alias);
-      const accessory = new this.api.platformAccessory(device.dev_alias, uuid);
-      accessory.context.device = device;
-      new MyPlatformAccessory(this, accessory, device);
-      this.api.registerPlatformAccessories('homebridge-heatzy', 'Heatzy', [accessory]);
-      this.accessories.push(accessory);
-    }
+      if (existingAccessory) {
+        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+        existingAccessory.context.device = device;
+        existingAccessory.context.mode = mode; // Store the mode in the context
+        new MyPlatformAccessory(this, existingAccessory, device, mode);
+      } else {
+        const displayName = `${device.dev_alias}-${mode}`;
+        this.log.info('Adding new accessory:', displayName);
+
+        const accessory = new this.api.platformAccessory(displayName, uuid);
+        accessory.context.device = device;
+        accessory.context.mode = mode; // Store the mode in the context
+        new MyPlatformAccessory(this, accessory, device, mode);
+        this.api.registerPlatformAccessories('homebridge-heatzy', 'Heatzy', [accessory]);
+        this.accessories.push(accessory);
+      }
+    });
   }
 
   configureAccessory(accessory: PlatformAccessory): void {
