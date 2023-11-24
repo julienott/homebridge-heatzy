@@ -2,13 +2,13 @@
   "pluginAlias": "Heatzy",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "Enter your credentials for the Gizwits API.",
-  "footerDisplay": "Ensure your credentials are correct to enable proper functioning of the plugin.",
+  "headerDisplay": "Please provide your Heatzy login details",
+  "footerDisplay": "These should be the same credentials you use in the Heatzy app.",
   "schema": {
     "type": "object",
     "properties": {
       "username": {
-        "title": "Username",
+        "title": "Email",
         "type": "string",
         "required": true
       },
@@ -19,7 +19,7 @@
         "format": "password"
       },
       "modes": {
-        "title": "Spawn Each accessory for the following modes",
+        "title": "Choose the switch modes you wish to show.",
         "type": "array",
         "items": {
           "type": "string",

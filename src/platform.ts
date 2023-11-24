@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig } from 'homebridge';
-import { MyPlatformAccessory } from './platformAccessory';
+import { HeatzyAccessory } from './platformAccessory';
 
 export class Heatzy implements DynamicPlatformPlugin {
   private readonly accessories: PlatformAccessory[] = [];
@@ -34,6 +34,7 @@ export class Heatzy implements DynamicPlatformPlugin {
       this.token = token;
       this.tokenExpireAt = new Date().getTime() + 3600000; // 1 hour token validity
       this.fetchDevices();
+
     } catch (error) {
       this.log.error('Error authenticating:', (error as Error).message);
     }
@@ -81,8 +82,6 @@ export class Heatzy implements DynamicPlatformPlugin {
     }
   }
 
-
-
   addAccessory(device: any, mode: string) {
     const uniqueId = device.did + ' ' + mode; // Unique ID for each mode
     const uuid = this.api.hap.uuid.generate(uniqueId);
@@ -92,7 +91,7 @@ export class Heatzy implements DynamicPlatformPlugin {
       this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
       existingAccessory.context.device = device;
       existingAccessory.context.mode = mode; // Store the mode in the context
-      new MyPlatformAccessory(this, existingAccessory, device, mode);
+      new HeatzyAccessory(this, existingAccessory, device, mode);
     } else {
       const displayName = `${device.dev_alias}-${mode}`;
       this.log.info('Adding new accessory:', displayName);
@@ -100,12 +99,11 @@ export class Heatzy implements DynamicPlatformPlugin {
       const accessory = new this.api.platformAccessory(displayName, uuid);
       accessory.context.device = device;
       accessory.context.mode = mode; // Store the mode in the context
-      new MyPlatformAccessory(this, accessory, device, mode);
+      new HeatzyAccessory(this, accessory, device, mode);
       this.api.registerPlatformAccessories('homebridge-heatzy', 'Heatzy', [accessory]);
       this.accessories.push(accessory);
     }
   }
-
 
   configureAccessory(accessory: PlatformAccessory): void {
     this.log.info('Configuring accessory:', accessory.displayName);

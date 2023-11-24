@@ -2,7 +2,7 @@ import { PlatformAccessory, Service, Characteristic, CharacteristicValue } from 
 import axios from 'axios';
 import { Heatzy } from './platform';
 
-export class MyPlatformAccessory {
+export class HeatzyAccessory {
   private service: Service;
   private modeMapping = {
     'Confort': 0,
@@ -92,7 +92,6 @@ export class MyPlatformAccessory {
     }
   }
 
-
   async getDeviceState(callback: Function) {
     if (this.platform.needsAuthentication()) {
       await this.platform.authenticate();
@@ -122,7 +121,6 @@ export class MyPlatformAccessory {
           // Log the mode received from the API
           this.platform.log.warn(`Unknown mode received from API: ${apiMode}`);
         }
-
         this.platform.log.info(`Fetched device state: ${this.accessory.displayName} - Mode: ${currentMode} - State: ${isOn ? 'On' : 'Off'}`);
         callback(null, isOn);
       } else {
