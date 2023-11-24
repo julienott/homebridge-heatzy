@@ -84,7 +84,7 @@ export class Heatzy implements DynamicPlatformPlugin {
 
 
   addAccessory(device: any, mode: string) {
-    const uniqueId = device.did + '-' + mode; // Unique ID for each mode
+    const uniqueId = device.did + ' ' + mode; // Unique ID for each mode
     const uuid = this.api.hap.uuid.generate(uniqueId);
     const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
 
