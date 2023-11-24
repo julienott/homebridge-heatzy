@@ -55,28 +55,32 @@ export class Heatzy implements DynamicPlatformPlugin {
       });
 
       const devices = response.data.devices;
-      const fetchedDeviceIds = new Set(devices.map(device => device.did));
+      const selectedModes = this.config.modes || [];
 
-      // Remove accessories not present in fetched devices
+      // Remove accessories not present in fetched devices or not in selected modes
       this.accessories.forEach(accessory => {
-        if (!fetchedDeviceIds.has(accessory.context.device.did)) {
+        const isDeviceFetched = devices.some(device => accessory.context.device.did === device.did);
+        const isModeSelected = selectedModes.includes(accessory.context.mode);
+
+        if (!isDeviceFetched || !isModeSelected) {
           this.log.info('Removing unused accessory:', accessory.displayName);
           this.api.unregisterPlatformAccessories('homebridge-heatzy', 'Heatzy', [accessory]);
         }
       });
 
-      // Continue with existing logic
-      this.log.info('Fetched devices:', devices.length);
-      const selectedModes = this.config.modes || []; // Get selected modes from config
+      // Add or update accessories for fetched devices
       devices.forEach(device => {
         selectedModes.forEach(mode => {
           this.addAccessory(device, mode); // Create accessory for each selected mode
         });
       });
+
+      this.log.info('Fetched devices:', devices.length);
     } catch (error) {
       this.log.error('Error fetching devices:', (error as Error).message);
     }
   }
+
 
 
   addAccessory(device: any, mode: string) {
