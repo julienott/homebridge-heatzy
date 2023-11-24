@@ -1,4 +1,4 @@
-# homebridge-heatzy
+# homebridge-heatzy-platform
 
 Homebridge plugin for Heatzy Pilote devices, considered as switches, for any mode.
 
@@ -16,7 +16,7 @@ Possible values for `mode` in the configuration file are:
 
 ## Installation & Configuration
 
-Install or update this plugin using `npm i -g homebridge-heatzy`.
+Install or update this plugin using `npm i -g homebridge-heatzy-platform`.
 
 Visit the plugin configuration once installed to enter your Heatzy credentials.
 
