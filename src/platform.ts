@@ -63,9 +63,15 @@ export class Heatzy implements DynamicPlatformPlugin {
   }
 
   addAccessory(device: any) {
-    // Create an accessory for each selected mode
-    const selectedModes = this.config.modes || []; // Get selected modes from config
+    // Get selected modes from config
+    const selectedModes = this.config.modes || [];
+
     selectedModes.forEach(mode => {
+      // Skip accessory creation if the mode is not set
+      if (!mode) {
+        return;
+      }
+
       const uniqueId = device.did + '-' + mode; // Unique ID for each mode
       const uuid = this.api.hap.uuid.generate(uniqueId);
       const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
@@ -88,6 +94,7 @@ export class Heatzy implements DynamicPlatformPlugin {
       }
     });
   }
+
 
   configureAccessory(accessory: PlatformAccessory): void {
     this.log.info('Configuring accessory:', accessory.displayName);
