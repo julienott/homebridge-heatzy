@@ -50,16 +50,19 @@ export class MyPlatformAccessory {
       });
 
       if (response.status === 200) {
-        this.platform.log.info('Device state set successfully');
-        callback(null);
+        // Log the success message with device name, mode, and state
+        const stateStr = value ? 'On' : 'Off';
+        this.platform.log.info(`Device state set successfully: ${this.accessory.displayName} - Mode: ${this.mode} - State: ${stateStr}`);
+        callback(null); // No error
       } else {
         throw new Error(`Request failed with status code ${response.status}`);
       }
     } catch (error) {
       this.platform.log.error('Failed to set device state:', (error as Error).message);
-      callback(error);
+      callback(error); // Error
     }
   }
+
 
   async getDeviceState(callback: Function) {
     if (this.platform.needsAuthentication()) {
