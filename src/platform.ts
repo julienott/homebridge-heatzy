@@ -65,7 +65,7 @@ export class Heatzy implements DynamicPlatformPlugin {
 
         if (!isDeviceFetched || !isModeSelected) {
           this.log.info('Removing unused accessory:', accessory.displayName);
-          this.api.unregisterPlatformAccessories('homebridge-heatzy', 'Heatzy', [accessory]);
+          this.api.unregisterPlatformAccessories('homebridge-heatzy-platform', 'Heatzy', [accessory]);
         }
       });
 
@@ -93,14 +93,14 @@ export class Heatzy implements DynamicPlatformPlugin {
       existingAccessory.context.mode = mode; // Store the mode in the context
       new HeatzyAccessory(this, existingAccessory, device, mode);
     } else {
-      const displayName = `${device.dev_alias}-${mode}`;
+      const displayName = `${device.dev_alias} ${mode}`;
       this.log.info('Adding new accessory:', displayName);
 
       const accessory = new this.api.platformAccessory(displayName, uuid);
       accessory.context.device = device;
       accessory.context.mode = mode; // Store the mode in the context
       new HeatzyAccessory(this, accessory, device, mode);
-      this.api.registerPlatformAccessories('homebridge-heatzy', 'Heatzy', [accessory]);
+      this.api.registerPlatformAccessories('homebridge-heatzy-platform', 'Heatzy', [accessory]);
       this.accessories.push(accessory);
     }
   }
