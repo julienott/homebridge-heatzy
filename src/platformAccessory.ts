@@ -36,11 +36,9 @@ export class HeatzyAccessory {
     this.service = this.accessory.getService(this.platform.api.hap.Service.Switch) ||
                    this.accessory.addService(this.platform.api.hap.Service.Switch, accessory.displayName);
 
-    // Set the handler for the "get" request of the "On" characteristic
     this.service.getCharacteristic(this.platform.api.hap.Characteristic.On)
-      .on('get', this.getOnCharacteristicHandler.bind(this))
-      .on('set', (value, callback) => this.setDeviceState(!!value, callback));
-
+      .on('set', (value, callback) => this.setDeviceState(!!value, callback))
+      .on('get', callback => this.getDeviceState(callback));
     this.startPolling();
   }
 
@@ -83,7 +81,7 @@ export class HeatzyAccessory {
       if (response.status === 200) {
         // Log the success message with device name, mode, and state
         const stateStr = value ? 'On' : 'Off';
-        this.platform.log.info(`Device state set successfully: ${this.accessory.displayName} - State: ${stateStr}`);
+        this.platform.log.info(`Device state set successfully: ${this.accessory.displayName} - Mode: ${this.mode} - State: ${stateStr}`);
         callback(null); // No error
       } else {
         throw new Error(`Request failed with status code ${response.status}`);
@@ -110,6 +108,10 @@ export class HeatzyAccessory {
         },
       });
 
+      // Log the status code and response data for debugging
+      // this.platform.log.debug('Response status:', response.status);
+      // this.platform.log.debug('Response data:', response.data);
+
       if (response.status === 200 && response.data && response.data.attr) {
         const apiMode = response.data.attr.mode;
         const currentMode = this.reverseModeMapping[apiMode] || 'Unknown'; // Default to 'Unknown' if not found
@@ -119,7 +121,7 @@ export class HeatzyAccessory {
           // Log the mode received from the API
           this.platform.log.warn(`Unknown mode received from API: ${apiMode}`);
         }
-        this.platform.log.info(`Fetched device state: ${this.accessory.displayName} - State: ${isOn ? 'On' : 'Off'}`);
+        this.platform.log.info(`Fetched device state: ${this.accessory.displayName} - Mode: ${currentMode} - State: ${isOn ? 'On' : 'Off'}`);
         callback(null, isOn);
       } else {
         throw new Error('Non-200 response or invalid data format');
@@ -134,17 +136,4 @@ export class HeatzyAccessory {
     }
   }
 
-  // Implement the getOnCharacteristicHandler method
-  private getOnCharacteristicHandler(callback: (error: any, value?: CharacteristicValue) => void) {
-    // Implement the logic to fetch the current state of the accessory
-    this.getDeviceState((error, isOn) => {
-      if (!error) {
-        // Call the callback with the current state (isOn should be a boolean)
-        callback(null, isOn);
-      } else {
-        // Call the callback with an error if fetching the state fails
-        callback(error);
-      }
-    });
-  }
 }

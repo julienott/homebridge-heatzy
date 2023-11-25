@@ -1,5 +1,5 @@
 {
-  "displayName": "Heatzy for Homebridge",
+  "displayName": "Heatzy Platform",
   "name": "homebridge-heatzy-platform",
   "version": "1.1.7",
   "description": "Use Heatzy modules with Homebridge as switches",
